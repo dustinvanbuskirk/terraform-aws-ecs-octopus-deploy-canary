@@ -1,0 +1,118 @@
+# terraform.tfvars.example
+# Copy this file to terraform.tfvars and fill in your values
+
+# ========================================
+# Service Configuration
+# ========================================
+# This is the MAGIC variable - set this and everything else is auto-named!
+service_name = "payment-api"
+
+# ========================================
+# AWS Configuration
+# ========================================
+aws_region = "us-east-1"
+vpc_id     = "vpc-xxxxxxxxxxxxxxxxx"
+
+subnet_ids = [
+  "subnet-xxxxxxxxxxxxxxxxx",
+  "subnet-yyyyyyyyyyyyyyyyy",
+]
+
+security_group_ids = [
+  "sg-xxxxxxxxxxxxxxxxx",
+]
+
+alb_subnet_ids = [
+  "subnet-xxxxxxxxxxxxxxxxx", # Public subnet 1
+  "subnet-yyyyyyyyyyyyyyyyy", # Public subnet 2
+]
+
+# Optional: Provide existing ALB security groups, or leave empty to create new ones
+alb_security_group_ids = []
+
+# ========================================
+# ECS Configuration
+# ========================================
+create_ecs_clusters = true
+cluster_name_prefix = "ecs-canary-cluster"
+task_family         = "" # Leave empty to use service_name
+container_image     = "myorg/payment-api"
+app_version         = "1.0.0"
+
+# ========================================
+# Load Balancer Configuration
+# ========================================
+enable_deletion_protection       = false
+enable_cross_zone_load_balancing = true
+enable_http2                     = true
+idle_timeout                     = 60
+
+# ========================================
+# Octopus Deploy Configuration
+# ========================================
+octopus_server_url       = "https://your-instance.octopus.app"
+octopus_api_key          = "API-XXXXXXXXXXXXXXXXXXXXXXXX" # Should be set via TF_VAR_octopus_api_key
+octopus_space_name       = "Default"
+octopus_project_name     = "" # Leave empty to use service_name
+octopus_aws_account_name = "sales-demo-oidc"
+octopus_worker_pool_id   = "WorkerPools-64"
+
+# ========================================
+# Deployment Process Configuration
+# ========================================
+# Set to true to create/update deployment process
+# 
+# When to use:
+# - NEW projects: Set to true (or omit, process will be created automatically anyway)
+# - EXISTING projects you want to update: Set to true
+# - EXISTING projects you DON'T want to change: Set to false
+#
+# The deployment process includes 13 steps for progressive canary deployments
+create_deployment_process = true
+
+# ========================================
+# Automatically Created Resources
+# ========================================
+# The following resources are automatically created OR reused by Terraform:
+# 
+# Shared Across All Services (created once, reused):
+# - Project Group: "ECS - Canary" 
+# - Environments: Development, Test, Production
+# - Lifecycle: Standard Lifecycle (Dev → Test → Prod)
+#
+# Per Service (created for each service):
+# - Octopus Project (named after service_name)
+# - Deployment Process (13 inline steps for canary deployment)
+# - Environment-scoped variables (ARNs, configuration)
+# - AWS Resources (ECS, ALB, Target Groups)
+#
+# No additional IDs or configuration needed - Terraform handles everything!
+
+# ========================================
+# Environment Configuration (Optional)
+# ========================================
+# Leave this empty to use auto-generated names based on service_name
+# Only customize if you need specific names that don't follow the pattern
+environments = {}
+
+# Example custom configuration:
+# environments = {
+#   development = {
+#     name         = "Development"
+#     service_name = "payment-api-dev"
+#     alb_name     = "payment-api-alb-dev"
+#     cluster_name = "payment-api-cluster-dev"
+#   }
+#   test = {
+#     name         = "Test"
+#     service_name = "payment-api-test"
+#     alb_name     = "payment-api-alb-test"
+#     cluster_name = "payment-api-cluster-test"
+#   }
+#   production = {
+#     name         = "Production"
+#     service_name = "payment-api-prod"
+#     alb_name     = "payment-api-alb-prod"
+#     cluster_name = "payment-api-cluster-prod"
+#   }
+# }
